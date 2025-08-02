@@ -1,0 +1,17 @@
+.venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+*.mp3
+*.wav
+french_learning_output/*.json
+.vscode
