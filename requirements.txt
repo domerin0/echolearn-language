@@ -2,8 +2,6 @@
 
 # Audio processing
 pydub>=0.25.1
-librosa>=0.10.0
-numpy>=1.24.0
 
 # Speech recognition
 SpeechRecognition>=3.10.0
