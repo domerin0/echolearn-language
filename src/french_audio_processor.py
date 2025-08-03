@@ -15,6 +15,7 @@ import speech_recognition as sr
 from googletrans import Translator
 import pyttsx3
 from gtts import gTTS
+from TTS.api import TTS
 from datetime import datetime
 
 
@@ -150,9 +151,10 @@ class FrenchAudioProcessor:
 
         try:
             if language == 'en':
-                # Use gTTS for English
-                tts = gTTS(text=text, lang='en')
-                tts.save(output_path)
+                # Use Coqui TTS for English neural voice
+                tts = TTS(
+                    model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False)
+                tts.tts_to_file(text=text, file_path=output_path)
                 return True
             else:
                 # Use pyttsx3 for French
@@ -182,8 +184,15 @@ class FrenchAudioProcessor:
         """Main processing function."""
         print(f"\n=== Processing {input_file} ===")
 
-        # Get base filename for output
+        # Get base filename for output (remove any 'tmp' prefix)
         base_name = Path(input_file).stem
+        if base_name.startswith('tmp'):
+            # Remove 'tmp' and any trailing random string
+            parts = base_name.split('_', 1)
+            if len(parts) > 1:
+                base_name = parts[1]
+            else:
+                base_name = base_name[3:]
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_base = f"{base_name}_{timestamp}"
 
@@ -221,12 +230,14 @@ class FrenchAudioProcessor:
             english_audio_path = self.output_dir / \
                 "english_audio" / f"{output_base}_en_{i+1:03d}.mp3"
 
-            # Save original French audio segment
-            segment.export(french_audio_path, format="mp3")
+            # Save original French audio segment if not exists
+            if not french_audio_path.exists():
+                segment.export(french_audio_path, format="mp3")
 
-            # Generate English TTS (now using gTTS)
-            self.generate_tts_audio(
-                english_text, str(english_audio_path), 'en')
+            # Generate English TTS only if not exists
+            if not english_audio_path.exists():
+                self.generate_tts_audio(
+                    english_text, str(english_audio_path), 'en')
 
             # Create section data
             section_data = {
